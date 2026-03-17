@@ -155,7 +155,7 @@ This project was created as part of a data science / machine learning university
 - Build a dashboard for churn monitoring
 - Deploy the model as an API or web application
 
-- # Team members
+# Team members
 
 Levente Sélley
 
