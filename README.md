@@ -154,3 +154,9 @@ This project was created as part of a data science / machine learning university
 - Add explainability tools (SHAP)
 - Build a dashboard for churn monitoring
 - Deploy the model as an API or web application
+
+- # Team members
+
+Levente Sélley
+Gergő Zalaváry
+Fabó Leon Tompos
