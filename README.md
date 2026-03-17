@@ -158,5 +158,7 @@ This project was created as part of a data science / machine learning university
 - # Team members
 
 Levente Sélley
+
 Gergő Zalaváry
+
 Fabó Leon Tompos
