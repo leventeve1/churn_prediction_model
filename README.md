@@ -1,10 +1,10 @@
 # Customer Churn Prediction for a Streaming Service
 
-This project demonstrates a simple machine learning pipeline to predict customer churn for a fictional video streaming company.
+This project demonstrates a machine learning pipeline to predict customer churn for a fictional video streaming company.
 
 The goal is to identify customers who are likely to cancel their subscription so the company can take targeted retention actions such as discounts, emails, or personalized recommendations.
 
-The script trains multiple machine learning models, selects the best performing one, and outputs churn probabilities for each customer.
+The script trains multiple machine learning models, selects the best performing one, and outputs churn probabilities with per-customer explanations for each prediction.
 
 ---
 
@@ -40,9 +40,17 @@ Example columns in the dataset:
 
 ---
 
-# Machine Learning Approach
+# Star Schema (Fact and Dimension Tables)
 
-The pipeline performs the following steps:
+The dataset is split into a star schema for structured analysis:
+
+- **dim_customer.csv** — Customer dimension (Customer_ID, Age, Gender, Region)
+- **fact_payment.csv** — Payment fact table (Customer_ID, Payment_Method, Monthly_Spend, Discount_Offered)
+- **fact_usage.csv** — Usage fact table (Customer_ID, Subscription_Length, Last_Activity, Support_Tickets_Raised, Satisfaction_Score)
+
+---
+
+# Machine Learning Approach
 
 ### 1. Data Preparation
 - Missing values are filled using the median.
@@ -67,98 +75,146 @@ The selected model predicts the churn probability for each customer.
 ### 6. Feature Importance
 The system calculates the most important factors influencing churn and their relative importance percentages.
 
+### 7. Per-Customer Clues
+For each customer, the system identifies the top 3 features that push them toward the churner profile. Each clue shows the customer's value compared to the average churner value, helping explain why that customer is at risk.
+
+Example clue: `Satisfaction_Score=2.0 (churner avg: 4.5)`
+
 ---
 
 # Output
 
-After running the script, an output file is generated:
+The script generates predictions in three formats:
 
-OUTPUT_PREDICTION.csv
-
-The file contains:
-1. The best model used
-2. Model accuracy
-3. Top factors influencing churn
-4. Customers sorted by churn probability
+- **OUTPUT_PREDICTION.csv** — CSV with model info, top factors, and per-customer predictions with clues
+- **OUTPUT_PREDICTION.json** — Same data in JSON format
+- **OUTPUT_PREDICTION.xml** — Same data in XML format
 
 Example output:
 
-Best Model Used,Random Forest  
-Model Accuracy,0.84  
-
-Top Factors Indicating Churn (importance %):  
-Last_Activity,21.3%  
-Satisfaction_Score,18.7%  
-Subscription_Length,16.5%  
-
-Customer_ID,Churn_Probability  
-CUST000241,0.93  
-CUST000982,0.91  
-
-This allows a marketing team to quickly identify high-risk customers.
+```
+Customer_ID,Churn_Probability,Clues
+CUST000221,0.9999,Satisfaction_Score=1.0 (churner avg: 4.5); Last_Activity=333 (churner avg: 220.7)
+```
 
 ---
 
-# How to Run
+# Docker Deployment
 
-### 1 Install dependencies
+The model is deployed as a containerized REST API using Flask.
 
+### Build and run the container
+
+```
+docker build -t churn-prediction .
+docker run -p 5000:5000 churn-prediction
+```
+
+### API Endpoints
+
+**POST /predict** — Submit customer data, receive churn probability and clues
+
+```bash
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Customer_ID": "CUST999999",
+    "Age": 35,
+    "Gender": "Male",
+    "Subscription_Length": 12,
+    "Region": "East",
+    "Payment_Method": "PayPal",
+    "Support_Tickets_Raised": 5,
+    "Satisfaction_Score": 3,
+    "Discount_Offered": 10.5,
+    "Last_Activity": 200,
+    "Monthly_Spend": 45.0
+  }'
+```
+
+**GET /health** — Health check
+
+---
+
+# Scheduling
+
+The batch prediction script can be scheduled to run automatically using **Windows Task Scheduler**:
+
+1. Open Task Scheduler (`taskschd.msc`)
+2. Create Basic Task
+3. Set a trigger (e.g. daily, weekly)
+4. Action: Start a Program
+5. Program/script: path to `run_schedule.bat`
+
+Each run is logged to `run_log.txt`.
+
+---
+
+# How to Run Locally
+
+### 1. Install dependencies
+
+```
 pip install -r requirements.txt
+```
 
-### 2 Place dataset in project folder
+### 2. Place dataset in project folder
 
+```
 Streaming.csv
+```
 
-### 3 Run the script
+### 3. Run the script
 
+```
 python ChurnPrediction.py
+```
 
-### 4 Output
+### 4. Output
 
 The script will generate:
-
-OUTPUT_PREDICTION.csv
+- `OUTPUT_PREDICTION.csv`, `.json`, `.xml`
+- `dim_customer.csv`, `fact_payment.csv`, `fact_usage.csv`
+- Model artifacts (`model.joblib`, `scaler.joblib`, etc.)
 
 ---
 
 # Project Structure
 
+```
 project/
-
-Streaming.csv  
-ChurnPrediction.py  
-requirements.txt  
-README.md  
+  Streaming.csv              # Input dataset
+  ChurnPrediction.py         # Main prediction script
+  app.py                     # Flask API for Docker deployment
+  Dockerfile                 # Container definition
+  run_schedule.bat           # Windows Task Scheduler script
+  requirements.txt           # Python dependencies
+  README.md
+  dim_customer.csv           # Customer dimension table
+  fact_payment.csv           # Payment fact table
+  fact_usage.csv             # Usage fact table
+  OUTPUT_PREDICTION.csv      # Predictions (CSV)
+  OUTPUT_PREDICTION.json     # Predictions (JSON)
+  OUTPUT_PREDICTION.xml      # Predictions (XML)
+```
 
 ---
 
 # Technologies Used
 
-Python  
-Pandas  
-Scikit-learn  
-Machine Learning (classification)
+- Python
+- Pandas, NumPy
+- Scikit-learn (Logistic Regression, Random Forest, Gradient Boosting)
+- Flask (REST API)
+- Docker (containerization)
+- Windows Task Scheduler (scheduling)
 
 ---
 
-# Educational Purpose
+# Team Members
 
-This project was created as part of a data science / machine learning university assignment demonstrating a complete workflow including data preparation, model training, model comparison, churn probability prediction, and business-oriented output.
+Levente Selley
 
----
+Gergo Zalavary
 
-# Possible Future Improvements
-
-- Add more advanced models (XGBoost, LightGBM)
-- Use cross-validation for model selection
-- Add explainability tools (SHAP)
-- Build a dashboard for churn monitoring
-- Deploy the model as an API or web application
-
-# Team members
-
-Levente Sélley
-
-Gergő Zalaváry
-
-Fabó Leon Tompos
+Fabo Leon Tompos
