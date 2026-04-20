@@ -114,25 +114,10 @@ docker run -p 5000:5000 churn-prediction
 
 **POST /predict** — Submit customer data, receive churn probability and clues
 
-```bash
-curl -X POST http://localhost:5000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Customer_ID": "CUST999999",
-    "Age": 35,
-    "Gender": "Male",
-    "Subscription_Length": 12,
-    "Region": "East",
-    "Payment_Method": "PayPal",
-    "Support_Tickets_Raised": 5,
-    "Satisfaction_Score": 3,
-    "Discount_Offered": 10.5,
-    "Last_Activity": 200,
-    "Monthly_Spend": 45.0
-  }'
-```
+## 🔌 Example API Request (POST /predict)
 
-Example: curl -X POST http://localhost:5000/predict ^
+```bash
+curl -X POST http://localhost:5000/predict ^
 -H "Content-Type: application/json" ^
 -d "{\"Customer_ID\":\"CUST999999\",\"Age\":35,\"Gender\":\"Male\",\"Subscription_Length\":12,\"Region\":\"East\",\"Payment_Method\":\"PayPal\",\"Support_Tickets_Raised\":5,\"Satisfaction_Score\":3,\"Discount_Offered\":10.5,\"Last_Activity\":200,\"Monthly_Spend\":45.0}"
 
